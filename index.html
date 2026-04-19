@@ -1058,7 +1058,7 @@ hr.rule { border: 0; border-top: 1px solid var(--line); margin: 0; }
 
 <script>
 /* ======================== API config ======================== */
-const API_BASE = 'http://localhost:8000';
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : '/api';
 
 /* ======================== Tweak state ======================== */
 const TWEAKS = /*EDITMODE-BEGIN*/{
