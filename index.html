@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LedgerLane — Bank statements, converted.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   LedgerLane — original design system
+   Two variations: "quiet" (editorial, Mercury-leaning)
+                   "precision" (bright, Stripe-leaning)
+   ========================================================= */
+
+:root {
+  /* Base ink/surface for light mode, overridden by theme classes */
+  --ink-900: #0b1220;
+  --ink-700: #1f2a3d;
+  --ink-500: #4a5669;
+  --ink-400: #6b7689;
+  --ink-300: #9aa3b4;
+  --ink-200: #c9cfd9;
+  --ink-100: #e4e7ec;
+  --ink-50:  #f2f4f7;
+
+  --paper:    #fafaf7;   /* warm off-white */
+  --paper-2:  #f4f3ee;
+  --card:     #ffffff;
+  --line:     #e7e6e0;
+  --line-2:   #d9d7cf;
+
+  --accent-600: #0f6b7c;    /* teal */
+  --accent-500: #14869b;
+  --accent-200: #a6dae2;
+  --accent-50:  #e6f3f6;
+
+  --good-500: #1f8f5b;
+  --warn-500: #b4802a;
+  --bad-500:  #b24a3a;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 1px 0 rgba(11,18,32,.04), 0 1px 2px rgba(11,18,32,.04);
+  --shadow-md: 0 1px 0 rgba(11,18,32,.04), 0 6px 16px -6px rgba(11,18,32,.12);
+  --shadow-lg: 0 1px 0 rgba(11,18,32,.04), 0 24px 48px -20px rgba(11,18,32,.24);
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  --density-row: 40px;
+  --density-pad: 14px;
+
+  --maxw: 1200px;
+}
+
+/* ---------- Variation: Precision (Stripe-leaning) ---------- */
+.theme-precision {
+  --paper:   #ffffff;
+  --paper-2: #f6f8fb;
+  --card:    #ffffff;
+  --line:    #e6ebf1;
+  --line-2:  #d7dee7;
+  --ink-900: #0a2540;
+  --ink-700: #18325c;
+  --ink-500: #425466;
+  --ink-400: #697386;
+  --ink-300: #8898aa;
+  --accent-600: #1a56db;
+  --accent-500: #2563eb;
+  --accent-200: #c5d5f7;
+  --accent-50:  #eef3fd;
+}
+
+/* ---------- Density ---------- */
+.density-compact {
+  --density-row: 34px;
+  --density-pad: 10px;
+}
+.density-airy {
+  --density-row: 48px;
+  --density-pad: 18px;
+}
+
+/* ---------- Dark mode ---------- */
+.mode-dark {
+  --paper:   #0a0f1a;
+  --paper-2: #0f1626;
+  --card:    #111a2b;
+  --line:    #1d2740;
+  --line-2:  #2a3656;
+  --ink-900: #eef2f8;
+  --ink-700: #d3dbe8;
+  --ink-500: #9aa7bd;
+  --ink-400: #7f8ca3;
+  --ink-300: #5c6a83;
+  --ink-200: #394562;
+  --ink-100: #1d2740;
+  --ink-50:  #141c2e;
+  --accent-50: #0f2833;
+  --accent-200: #1b4a59;
+  --shadow-sm: 0 1px 0 rgba(0,0,0,.3);
+  --shadow-md: 0 1px 0 rgba(0,0,0,.3), 0 10px 24px -10px rgba(0,0,0,.55);
+  --shadow-lg: 0 1px 0 rgba(0,0,0,.3), 0 28px 60px -24px rgba(0,0,0,.7);
+}
+.mode-dark.theme-precision {
+  --paper: #0a1024;
+  --paper-2: #0e1530;
+  --card:  #121a38;
+  --line:  #1f2a4d;
+}
+
+/* ========================================================= */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01","cv11";
+  background: var(--paper);
+  color: var(--ink-900);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+input, textarea { font: inherit; color: inherit; }
+
+/* ---------- Layout primitives ---------- */
+.container { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+.hstack { display: flex; align-items: center; gap: 10px; }
+.vstack { display: flex; flex-direction: column; gap: 10px; }
+.muted { color: var(--ink-500); }
+.dim   { color: var(--ink-400); }
+.mono  { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: -.01em; }
+
+/* ---------- Top nav ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in oklab, var(--paper) 84%, transparent);
+  backdrop-filter: saturate(160%) blur(10px);
+  -webkit-backdrop-filter: saturate(160%) blur(10px);
+  border-bottom: 1px solid color-mix(in oklab, var(--line) 70%, transparent);
+}
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: -.01em; }
+.brand-mark {
+  width: 26px; height: 26px; border-radius: 7px;
+  background: linear-gradient(145deg, var(--ink-900) 0%, var(--accent-600) 140%);
+  position: relative; box-shadow: 0 0 0 1px color-mix(in oklab, var(--ink-900) 18%, transparent) inset;
+}
+.brand-mark::before, .brand-mark::after {
+  content: ""; position: absolute; left: 6px; right: 6px; height: 2px; background: var(--paper); border-radius: 2px;
+}
+.brand-mark::before { top: 9px; opacity: .9; }
+.brand-mark::after  { top: 15px; opacity: .55; width: 10px; }
+.brand-name { font-size: 15.5px; }
+.nav-links { display: flex; gap: 28px; color: var(--ink-500); font-size: 14px; }
+.nav-links a:hover { color: var(--ink-900); }
+.nav-cta { display: flex; gap: 10px; align-items: center; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 38px; padding: 0 14px; border-radius: 8px;
+  font-weight: 500; font-size: 14px; letter-spacing: -.005em;
+  border: 1px solid transparent; transition: transform .08s ease, background .15s ease, border-color .15s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  background: var(--ink-900); color: var(--paper);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.btn-primary:hover { background: color-mix(in oklab, var(--ink-900) 88%, var(--accent-600)); }
+.theme-precision .btn-primary { background: var(--accent-600); color: #fff; }
+.theme-precision .btn-primary:hover { background: color-mix(in oklab, var(--accent-600) 92%, black); }
+.btn-ghost { background: transparent; color: var(--ink-700); border-color: var(--line-2); }
+.btn-ghost:hover { background: var(--paper-2); color: var(--ink-900); }
+.btn-quiet { color: var(--ink-500); }
+.btn-quiet:hover { color: var(--ink-900); }
+.btn-sm { height: 30px; padding: 0 10px; font-size: 13px; border-radius: 7px; }
+.btn-lg { height: 46px; padding: 0 18px; font-size: 15px; border-radius: 10px; }
+
+/* ---------- Badges / pills ---------- */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500; letter-spacing: -.005em;
+  padding: 3px 8px; border-radius: 999px;
+  border: 1px solid var(--line-2); color: var(--ink-500); background: var(--paper-2);
+}
+.pill.solid { background: var(--ink-900); color: var(--paper); border-color: var(--ink-900); }
+.pill.accent { background: var(--accent-50); color: var(--accent-600); border-color: var(--accent-200); }
+.pill.good { background: color-mix(in oklab, var(--good-500) 12%, var(--paper)); color: var(--good-500); border-color: color-mix(in oklab, var(--good-500) 30%, var(--line)); }
+.pill.warn { background: color-mix(in oklab, var(--warn-500) 12%, var(--paper)); color: var(--warn-500); border-color: color-mix(in oklab, var(--warn-500) 30%, var(--line)); }
+
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+/* ---------- Hero (centered, upload-first) ---------- */
+.hero {
+  padding: 84px 0 40px;
+  position: relative;
+  text-align: center;
+}
+.hero-inner {
+  max-width: 780px;
+  margin: 0 auto;
+}
+.eyebrow {
+  display: inline-flex; gap: 8px; align-items: center;
+  font-size: 12.5px; letter-spacing: .02em; color: var(--ink-500);
+  padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line-2);
+  background: color-mix(in oklab, var(--paper) 80%, transparent);
+}
+.eyebrow .dot { background: var(--good-500); box-shadow: 0 0 0 3px color-mix(in oklab, var(--good-500) 18%, transparent); }
+
+h1.display {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(40px, 5vw, 60px);
+  line-height: 1.04;
+  letter-spacing: -.02em;
+  margin: 20px 0 14px;
+  color: var(--ink-900);
+  text-wrap: balance;
+}
+h1.display em { font-style: italic; color: var(--accent-600); }
+.theme-precision h1.display {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -.035em;
+}
+.theme-precision h1.display em { font-style: normal; }
+.sub {
+  font-size: 17px; color: var(--ink-500); max-width: 54ch; margin: 0 auto;
+  text-wrap: pretty;
+}
+.hero-cta { display: flex; gap: 10px; margin-top: 26px; justify-content: center; }
+
+.trust-row {
+  margin-top: 36px;
+  display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; justify-content: center;
+  color: var(--ink-400); font-size: 12.5px;
+}
+.trust-row .sep { width: 1px; height: 14px; background: var(--line-2); }
+
+/* Full-width upload module under hero text */
+.hero-app {
+  max-width: 920px;
+  margin: 44px auto 0;
+}
+
+/* ---------- Upload card (inline in hero) ---------- */
+.app-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  position: relative;
+}
+.app-chrome {
+  height: 38px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 14px; background: var(--paper-2);
+}
+.chrome-dots { display: flex; gap: 6px; }
+.chrome-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--ink-100); display: block; }
+.chrome-title { font-size: 12px; color: var(--ink-400); font-family: var(--font-mono); }
+.chrome-right { display: flex; gap: 8px; align-items: center; color: var(--ink-400); font-size: 11.5px; font-family: var(--font-mono); }
+
+/* App inner layers */
+.app-surface { position: relative; padding: 22px; }
+
+/* --- Stage: upload --- */
+.stage { transition: opacity .35s ease; }
+.stage.hide { display: none; }
+
+.drop {
+  border: 1.5px dashed var(--line-2);
+  border-radius: var(--radius-lg);
+  padding: 34px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 20% 10%, color-mix(in oklab, var(--accent-50) 60%, transparent), transparent 55%),
+    radial-gradient(circle at 85% 90%, color-mix(in oklab, var(--accent-50) 50%, transparent), transparent 55%),
+    var(--paper-2);
+  transition: border-color .2s, background .2s, transform .1s;
+  cursor: pointer;
+}
+.drop:hover, .drop.over { border-color: var(--accent-500); background-color: color-mix(in oklab, var(--accent-50) 55%, var(--paper-2)); }
+.drop-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: var(--card); border: 1px solid var(--line);
+  display: grid; place-items: center; margin: 0 auto 14px;
+  box-shadow: var(--shadow-sm);
+  color: var(--accent-600);
+}
+.drop h3 { margin: 4px 0 6px; font-size: 19px; letter-spacing: -.01em; font-weight: 600; }
+.drop p { margin: 0; color: var(--ink-500); font-size: 14px; }
+.drop .browse { color: var(--accent-600); font-weight: 500; }
+
+.upload-meta {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px;
+}
+.meta-chip {
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 10px; padding: 10px 12px;
+  display: flex; gap: 10px; align-items: center;
+  font-size: 12.5px; color: var(--ink-500);
+}
+.meta-chip b { color: var(--ink-900); font-weight: 500; display: block; font-size: 13px; }
+
+/* --- Stage: processing --- */
+.detect {
+  padding: 20px 22px 8px;
+}
+.detect-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px dashed var(--line);
+}
+.detect-row:last-child { border: 0; }
+.detect-icn {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--paper-2); border: 1px solid var(--line);
+  display: grid; place-items: center; color: var(--ink-500);
+  flex-shrink: 0;
+}
+.detect-body { flex: 1; min-width: 0; }
+.detect-body .t { font-size: 13.5px; font-weight: 500; }
+.detect-body .s { font-size: 12px; color: var(--ink-500); }
+.bar {
+  height: 6px; border-radius: 4px; background: var(--ink-100); overflow: hidden; margin-top: 8px;
+}
+.bar > i { display: block; height: 100%; background: var(--accent-500); width: 0%; transition: width .6s ease; }
+
+/* --- Stage: preview table --- */
+.preview-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 18px; border-bottom: 1px solid var(--line); background: var(--paper-2);
+}
+.preview-tabs { display: flex; gap: 2px; }
+.preview-tab {
+  padding: 6px 12px; font-size: 12.5px; color: var(--ink-500);
+  border-radius: 7px;
+}
+.preview-tab.on { background: var(--card); color: var(--ink-900); box-shadow: var(--shadow-sm); border: 1px solid var(--line); }
+.preview-stats { display: flex; gap: 18px; color: var(--ink-500); font-size: 12.5px; }
+.preview-stats b { color: var(--ink-900); font-weight: 500; }
+
+.table-wrap { overflow: auto; max-height: 340px; }
+table.tx {
+  width: 100%; border-collapse: collapse; font-size: 13.5px;
+}
+table.tx thead th {
+  position: sticky; top: 0;
+  text-align: left; font-weight: 500; font-size: 11.5px;
+  color: var(--ink-400); letter-spacing: .04em; text-transform: uppercase;
+  padding: 10px 14px; background: var(--card); border-bottom: 1px solid var(--line);
+}
+table.tx thead th.num { text-align: right; }
+table.tx tbody td {
+  padding: 0 14px; height: var(--density-row);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap; color: var(--ink-700);
+}
+table.tx tbody tr:hover td { background: var(--paper-2); }
+table.tx td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+table.tx td .desc { color: var(--ink-900); font-weight: 500; }
+table.tx td .sub  { color: var(--ink-400); font-size: 12px; }
+table.tx td.date  { color: var(--ink-500); font-variant-numeric: tabular-nums; }
+.row-flag td { background: color-mix(in oklab, var(--warn-500) 7%, var(--card)) !important; }
+.row-flag td:first-child { box-shadow: inset 2px 0 0 var(--warn-500); }
+.credit { color: var(--good-500); }
+.cell-edit {
+  display: inline-block; min-width: 80px;
+  padding: 2px 6px; margin: -2px -6px;
+  border-radius: 5px; outline: none;
+}
+.cell-edit:hover { background: color-mix(in oklab, var(--accent-50) 60%, transparent); }
+.cell-edit:focus { background: var(--card); box-shadow: 0 0 0 2px var(--accent-200); }
+
+.preview-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-top: 1px solid var(--line); background: var(--paper-2);
+  gap: 10px; flex-wrap: wrap;
+}
+.export-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 7px;
+  border: 1px solid var(--line-2); background: var(--card);
+  font-size: 12.5px; color: var(--ink-700); font-weight: 500;
+  cursor: pointer; transition: all .12s;
+}
+.chip:hover { border-color: var(--accent-500); color: var(--accent-600); }
+.chip.on   { border-color: var(--accent-500); color: var(--accent-600); background: var(--accent-50); }
+.chip .mono { font-size: 11px; color: var(--ink-400); }
+
+/* ---------- Section scaffolding ---------- */
+section.block { padding: 64px 0; }
+.block-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; max-width: 720px; }
+.block-head .kicker {
+  font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent-600);
+}
+.block-head h2 {
+  font-family: var(--font-serif); font-weight: 400;
+  font-size: clamp(32px, 3.2vw, 44px); letter-spacing: -.02em; line-height: 1.08; margin: 0;
+  text-wrap: balance;
+}
+.theme-precision .block-head h2 { font-family: var(--font-sans); font-weight: 600; letter-spacing: -.025em; }
+.block-head p { color: var(--ink-500); font-size: 16px; margin: 0; max-width: 60ch; text-wrap: pretty; }
+
+/* ---------- Supported banks ---------- */
+.banks {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px;
+  background: var(--line); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); overflow: hidden;
+}
+.bank {
+  background: var(--card); padding: 22px 14px; min-height: 88px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  color: var(--ink-500); font-weight: 500; font-size: 13.5px;
+  transition: background .15s;
+}
+.bank:hover { background: var(--paper-2); color: var(--ink-900); }
+.bank-logo {
+  width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+  display: grid; place-items: center; font-size: 11px; font-weight: 600;
+  color: var(--paper);
+}
+.banks-footer {
+  margin-top: 14px; display: flex; align-items: center; justify-content: space-between;
+  color: var(--ink-400); font-size: 13px;
+}
+
+/* ---------- How it works ---------- */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.step {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: 24px; position: relative;
+}
+.step .n {
+  font-family: var(--font-mono); font-size: 11.5px;
+  color: var(--ink-400); letter-spacing: .1em;
+}
+.step h3 {
+  font-family: var(--font-serif); font-weight: 400; margin: 8px 0 6px;
+  font-size: 22px; letter-spacing: -.01em;
+}
+.theme-precision .step h3 { font-family: var(--font-sans); font-weight: 600; letter-spacing: -.02em; font-size: 18px; }
+.step p { color: var(--ink-500); font-size: 14px; margin: 0; }
+
+/* ---------- Trust block ---------- */
+.trust-grid {
+  display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 16px;
+}
+.trust-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: 22px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.trust-card h4 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+.trust-card p { margin: 0; color: var(--ink-500); font-size: 14px; }
+.trust-card .row { display: flex; align-items: center; gap: 10px; }
+.timer {
+  font-family: var(--font-mono); font-size: 32px; letter-spacing: -.02em;
+  color: var(--ink-900); line-height: 1;
+}
+.compliance {
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 8px;
+}
+.comp-badge {
+  border: 1px solid var(--line); background: var(--paper-2);
+  border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: var(--ink-500);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.comp-badge b { color: var(--ink-900); font-weight: 500; font-size: 13.5px; }
+
+/* ---------- Pricing ---------- */
+.pricing {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.pricing-head {
+  padding: 28px 28px 24px; display: grid; grid-template-columns: 1fr auto; gap: 24px;
+  align-items: end; border-bottom: 1px solid var(--line); background: var(--paper-2);
+}
+.pricing-head h3 { margin: 0; font-family: var(--font-serif); font-weight: 400; font-size: 32px; letter-spacing: -.02em; }
+.theme-precision .pricing-head h3 { font-family: var(--font-sans); font-weight: 600; letter-spacing: -.025em; }
+.pricing-head p { margin: 4px 0 0; color: var(--ink-500); }
+
+.pricing-grid { display: grid; grid-template-columns: 2fr 1fr; }
+.pricing-tiers { padding: 10px 0; }
+.tier {
+  padding: 18px 28px; border-bottom: 1px solid var(--line);
+  display: grid; grid-template-columns: 1fr auto auto; gap: 18px; align-items: center;
+}
+.tier:last-child { border-bottom: 0; }
+.tier .name { font-weight: 600; letter-spacing: -.01em; }
+.tier .desc { font-size: 13px; color: var(--ink-500); }
+.tier .pages { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-400); }
+.tier .price { font-family: var(--font-mono); font-size: 18px; letter-spacing: -.02em; color: var(--ink-900); }
+.tier .price small { color: var(--ink-400); font-size: 12px; font-weight: 400; margin-left: 2px; }
+
+.pricing-right {
+  border-left: 1px solid var(--line); padding: 28px;
+  background: var(--paper-2);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.pricing-right ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; font-size: 13.5px; color: var(--ink-700); }
+.pricing-right li::before {
+  content: "✓"; color: var(--accent-600); margin-right: 8px; font-weight: 600;
+}
+
+/* ---------- Testimonial ---------- */
+.quotes {
+  display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px;
+}
+.quote {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: 24px; display: flex; flex-direction: column; gap: 18px;
+}
+.quote p {
+  font-family: var(--font-serif); font-size: 22px; line-height: 1.3; letter-spacing: -.005em;
+  color: var(--ink-900); margin: 0; text-wrap: pretty;
+}
+.theme-precision .quote p { font-family: var(--font-sans); font-weight: 500; font-size: 18px; line-height: 1.45; letter-spacing: -.01em; }
+.quote .who { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--ink-100); color: var(--ink-700);
+  display: grid; place-items: center; font-size: 12px; font-weight: 600;
+}
+.quote .who .n { font-size: 13.5px; font-weight: 500; }
+.quote .who .r { font-size: 12px; color: var(--ink-400); }
+.quote .stats {
+  border-top: 1px dashed var(--line); padding-top: 14px;
+  display: flex; gap: 18px; color: var(--ink-500); font-size: 12px;
+}
+.quote .stats b { display: block; color: var(--ink-900); font-family: var(--font-mono); font-size: 16px; letter-spacing: -.02em; }
+
+/* ---------- CTA band ---------- */
+.cta-band {
+  margin: 0 auto; padding: 56px 40px;
+  background: var(--ink-900); color: var(--paper);
+  border-radius: var(--radius-xl);
+  display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; align-items: center;
+}
+.theme-precision .cta-band { background: linear-gradient(135deg, #0a2540 0%, #1a56db 150%); }
+.cta-band h3 { font-family: var(--font-serif); font-weight: 400; font-size: 40px; margin: 0; letter-spacing: -.02em; line-height: 1.05; text-wrap: balance; }
+.theme-precision .cta-band h3 { font-family: var(--font-sans); font-weight: 600; letter-spacing: -.025em; }
+.cta-band p { color: color-mix(in oklab, var(--paper) 70%, transparent); margin: 10px 0 0; max-width: 44ch; }
+.cta-band .btn-primary { background: var(--paper); color: var(--ink-900); }
+.cta-band .btn-primary:hover { background: color-mix(in oklab, var(--paper) 90%, white); }
+.cta-band .btn-ghost { border-color: color-mix(in oklab, var(--paper) 30%, transparent); color: var(--paper); }
+.cta-band .btn-ghost:hover { background: color-mix(in oklab, var(--paper) 8%, transparent); }
+
+/* ---------- Footer ---------- */
+footer {
+  padding: 40px 0 56px; color: var(--ink-400); font-size: 13px;
+  border-top: 1px solid var(--line); margin-top: 40px;
+}
+.foot-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.foot-links { display: flex; gap: 20px; }
+.foot-links a:hover { color: var(--ink-900); }
+
+/* ---------- History surface ---------- */
+.history {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.hist-row {
+  padding: 14px 20px; border-bottom: 1px solid var(--line);
+  display: grid; grid-template-columns: 28px 1.4fr 1fr .8fr .8fr auto; gap: 16px; align-items: center;
+  font-size: 13.5px;
+}
+.hist-row:last-child { border-bottom: 0; }
+.hist-row .ic { width: 28px; height: 28px; border-radius: 7px; background: var(--paper-2); border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink-500); }
+.hist-row .fname { font-weight: 500; }
+.hist-row .meta  { color: var(--ink-500); font-size: 12.5px; }
+.hist-row .stat  { font-family: var(--font-mono); font-size: 12px; color: var(--ink-500); }
+.hist-head {
+  padding: 12px 20px; color: var(--ink-400); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase;
+  border-bottom: 1px solid var(--line); background: var(--paper-2);
+  display: grid; grid-template-columns: 28px 1.4fr 1fr .8fr .8fr auto; gap: 16px;
+}
+
+/* ---------- Tweaks panel ---------- */
+.tweaks {
+  position: fixed; right: 20px; bottom: 20px; z-index: 50;
+  width: 300px; background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  padding: 14px; font-size: 13px;
+  display: none;
+}
+.tweaks.on { display: block; }
+.tweaks h5 { margin: 0 0 12px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+.tweaks .grp { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.tweaks .grp > label { font-size: 11.5px; color: var(--ink-500); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+.tweaks .seg {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px;
+  padding: 3px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 8px;
+}
+.tweaks .seg button { padding: 6px 8px; border-radius: 5px; font-size: 12px; color: var(--ink-500); }
+.tweaks .seg button.on { background: var(--card); color: var(--ink-900); box-shadow: var(--shadow-sm); }
+.tweaks .swatches { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; }
+.tweaks .sw {
+  height: 26px; border-radius: 6px; border: 2px solid transparent; cursor: pointer;
+}
+.tweaks .sw.on { border-color: var(--ink-900); }
+
+.tweaks-close { color: var(--ink-400); font-size: 16px; }
+
+/* ---------- Misc utilities ---------- */
+.spacer { flex: 1; }
+hr.rule { border: 0; border-top: 1px solid var(--line); margin: 0; }
+
+/* Stage transitions */
+.fade-in { animation: fade .35s ease both; }
+@keyframes fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Icon sizing */
+.ic svg, .drop-icon svg, .detect-icn svg, .meta-chip svg { display: block; }
+
+/* Section label ids */
+[data-screen-label] { scroll-margin-top: 80px; }
+
+/* Small screens — still readable; not our primary target */
+@media (max-width: 1000px) {
+  .banks { grid-template-columns: repeat(3,1fr); }
+  .steps { grid-template-columns: 1fr; }
+  .trust-grid, .quotes { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .pricing-right { border-left: 0; border-top: 1px solid var(--line); }
+  .cta-band { grid-template-columns: 1fr; padding: 36px 24px; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body class="theme-quiet mode-light density-cozy">
+
+<!-- =================== NAV =================== -->
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">LedgerLane</span>
+      <span class="pill" style="margin-left:8px">Beta</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#banks">Banks</a>
+      <a href="#security">Security</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#history">Account</a>
+    </nav>
+    <div class="nav-cta">
+      <button class="btn btn-quiet btn-sm">Sign in</button>
+      <button class="btn btn-primary btn-sm" onclick="scrollToApp()">Convert a statement →</button>
+    </div>
+  </div>
+</header>
+
+<!-- =================== HERO =================== -->
+<main id="top" data-screen-label="01 Hero">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <span class="eyebrow"><span class="dot"></span> <span id="eyebrow-txt">SOC 2 Type II · Files deleted in 24h</span></span>
+        <h1 class="display" id="hero-headline">Bank statements, <em>converted</em>.</h1>
+        <p class="sub" id="hero-sub">Drop a PDF. Get clean CSV, Excel, QBO or OFX back in under a minute.</p>
+      </div>
+
+      <!-- Inline app preview: the main event -->
+      <div class="app-card hero-app" id="app" data-screen-label="02 Converter">
+        <div class="app-chrome">
+          <div class="chrome-dots"><i></i><i></i><i></i></div>
+          <div class="chrome-title">app.ledgerlane.com</div>
+          <div class="chrome-right">
+            <span class="dot" style="color:var(--good-500)"></span>
+            <span>encrypted</span>
+          </div>
+        </div>
+
+        <div class="app-surface">
+          <input type="file" id="file-input" accept=".pdf,application/pdf" style="display:none" />
+          <!-- ============ STAGE 1: UPLOAD ============ -->
+          <div class="stage stage-upload" id="stage-upload">
+            <div class="drop" id="drop">
+              <div class="drop-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+              </div>
+              <h3>Drop your statement, or <span class="browse">browse files</span></h3>
+              <p>PDF, PNG, JPG or scanned documents · Multi-file batch supported</p>
+              <div style="margin-top:18px; display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+                <span class="pill">PDF</span>
+                <span class="pill">PNG</span>
+                <span class="pill">JPG</span>
+                <span class="pill">Scan / OCR</span>
+                <span class="pill">Password-protected</span>
+              </div>
+            </div>
+
+            <div class="upload-meta">
+              <div class="meta-chip">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div><b>End-to-end encrypted</b>In transit &amp; at rest</div>
+              </div>
+              <div class="meta-chip">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                <div><b>Deleted in 24h</b>Or instantly, on request</div>
+              </div>
+              <div class="meta-chip">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                <div><b>99.4% accuracy</b>Across 1,200 banks</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ STAGE 2: DETECTING ============ -->
+          <div class="stage stage-detect hide" id="stage-detect">
+            <div class="detect">
+              <div class="detect-row">
+                <div class="detect-icn" style="color:var(--accent-600)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div class="detect-body">
+                  <div class="t">statement_march_2026.pdf <span class="mono dim" style="margin-left:6px">· 248 KB · 4 pages</span></div>
+                  <div class="s" id="detect-s1">Reading pages…</div>
+                  <div class="bar"><i id="bar-1"></i></div>
+                </div>
+              </div>
+              <div class="detect-row">
+                <div class="detect-icn" style="color:var(--accent-600)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+                </div>
+                <div class="detect-body">
+                  <div class="t">Detecting format</div>
+                  <div class="s" id="detect-s2">Matching layout fingerprint…</div>
+                  <div class="bar"><i id="bar-2"></i></div>
+                </div>
+              </div>
+              <div class="detect-row">
+                <div class="detect-icn" style="color:var(--accent-600)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M14 14h7v7h-7z"/><path d="M3 14h7v7H3z"/></svg>
+                </div>
+                <div class="detect-body">
+                  <div class="t">Extracting transactions</div>
+                  <div class="s" id="detect-s3">Reading 142 rows across 4 pages…</div>
+                  <div class="bar"><i id="bar-3"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ STAGE 3: PREVIEW TABLE ============ -->
+          <div class="stage stage-preview hide" id="stage-preview">
+            <div class="preview-head">
+              <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+                <div class="hstack">
+                  <span class="pill accent"><span class="dot" style="color:var(--accent-600)"></span> Chase Total Checking</span>
+                  <span class="mono dim">Mar 1 – Mar 31, 2026</span>
+                </div>
+              </div>
+              <div class="preview-stats">
+                <div><b id="tx-count">142</b> rows</div>
+                <div><b class="credit">+$8,420.16</b> in</div>
+                <div><b style="color:var(--bad-500)">−$6,911.48</b> out</div>
+                <div><b id="tx-flagged">3</b> flagged</div>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="tx">
+                <thead>
+                  <tr>
+                    <th style="width:96px">Date</th>
+                    <th>Description</th>
+                    <th style="width:140px">Category</th>
+                    <th class="num" style="width:100px">Amount</th>
+                    <th class="num" style="width:110px">Balance</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+              </table>
+            </div>
+
+            <div class="preview-foot">
+              <div class="export-chips" id="export-chips">
+                <button class="chip on" data-fmt="csv">CSV <span class="mono">.csv</span></button>
+                <button class="chip" data-fmt="xlsx">Excel <span class="mono">.xlsx</span></button>
+                <button class="chip" data-fmt="qbo">QuickBooks <span class="mono">.qbo</span></button>
+                <button class="chip" data-fmt="ofx">OFX <span class="mono">.ofx</span></button>
+                <button class="chip" data-fmt="json">JSON <span class="mono">.json</span></button>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-ghost btn-sm" onclick="resetDemo()">Start over</button>
+                <button class="btn btn-primary btn-sm" id="export-btn">Download <span id="export-ext">CSV</span> →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== SUPPORTED BANKS =================== -->
+  <section class="block" id="banks" data-screen-label="03 Banks">
+    <div class="container">
+      <div class="block-head">
+        <span class="kicker">Coverage</span>
+        <h2>We've met every statement layout your clients will send.</h2>
+        <p>1,204 banks, credit unions and neobanks across the US, Canada, UK and EU. If you've got a format we haven't seen, send it — we'll add it within 48 hours.</p>
+      </div>
+      <div class="banks" id="banks-grid"></div>
+      <div class="banks-footer">
+        <span>Plus 1,192 more — search all <a href="#" style="color:var(--accent-600)">1,204 institutions →</a></span>
+        <span class="mono">updated 2 days ago</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== TRUST (compact) =================== -->
+  <section class="block" id="security" data-screen-label="04 Security" style="background:var(--paper-2); border-block:1px solid var(--line); padding: 48px 0;">
+    <div class="container">
+      <div class="trust-grid">
+        <div class="trust-card">
+          <div class="row">
+            <span class="pill good"><span class="dot"></span> Live</span>
+            <span class="muted" style="font-size:13px">Files auto-delete in</span>
+          </div>
+          <div class="timer" id="timer">23:59:47</div>
+          <p>Every upload is shredded within 24 hours — originals, parsed tables, OCR scratch. No backups.</p>
+        </div>
+        <div class="trust-card">
+          <h4>Encrypted end-to-end</h4>
+          <p>TLS 1.3 in transit · AES-256 at rest · per-file isolated containers. We never read your data — and nothing is shared with third-party OCR or used for training.</p>
+        </div>
+        <div class="trust-card">
+          <h4>Audited &amp; compliant</h4>
+          <p style="margin-bottom:2px">Independently verified.</p>
+          <div class="compliance">
+            <div class="comp-badge"><b>SOC 2</b>Type II</div>
+            <div class="comp-badge"><b>GDPR</b>EU residency</div>
+            <div class="comp-badge"><b>CCPA</b>Ready</div>
+            <div class="comp-badge"><b>ISO 27001</b>In progress</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== PRICING =================== -->
+  <section class="block" id="pricing" data-screen-label="05 Pricing">
+    <div class="container">
+      <div class="block-head">
+        <span class="kicker">Pricing</span>
+        <h2>Pay per page. No seats, no minimums, no surprise invoices.</h2>
+        <p>Every plan includes 5 free pages, unlimited exports, account history and API access. Page = one printed page of statement, not one transaction.</p>
+      </div>
+
+      <div class="pricing">
+        <div class="pricing-head">
+          <div>
+            <h3>Pay only for what you convert.</h3>
+            <p>Pricing drops automatically as your volume grows — no tier to pick.</p>
+          </div>
+          <div class="pill accent"><span class="dot"></span> 5 free pages every month</div>
+        </div>
+        <div class="pricing-grid">
+          <div class="pricing-tiers">
+            <div class="tier">
+              <div>
+                <div class="name">Free</div>
+                <div class="desc">For trying it out on a real statement, not a sample.</div>
+              </div>
+              <div class="pages">1 – 5 pages / mo</div>
+              <div class="price">$0<small>/page</small></div>
+            </div>
+            <div class="tier">
+              <div>
+                <div class="name">Pay as you go</div>
+                <div class="desc">Drop in a credit card, convert when you need to.</div>
+              </div>
+              <div class="pages">6 – 250 pages</div>
+              <div class="price">$0.49<small>/page</small></div>
+            </div>
+            <div class="tier">
+              <div>
+                <div class="name">Volume</div>
+                <div class="desc">Automatic — no plan change, no sales call.</div>
+              </div>
+              <div class="pages">251 – 2,500 pages</div>
+              <div class="price">$0.29<small>/page</small></div>
+            </div>
+            <div class="tier">
+              <div>
+                <div class="name">Firm</div>
+                <div class="desc">For accounting firms, family offices, bookkeeping ops.</div>
+              </div>
+              <div class="pages">2,500+ pages</div>
+              <div class="price">$0.12<small>/page</small></div>
+            </div>
+          </div>
+          <div class="pricing-right">
+            <div style="font-weight:600; letter-spacing:-.01em;">Every tier includes</div>
+            <ul>
+              <li>Unlimited CSV / Excel / QBO / OFX / JSON exports</li>
+              <li>API access with 60 req/min</li>
+              <li>90-day account history &amp; re-download</li>
+              <li>Multi-file batch upload (up to 500 files)</li>
+              <li>Password-protected PDF support</li>
+              <li>Auto-deletion within 24 hours</li>
+              <li>Email support; live chat on Volume+</li>
+            </ul>
+            <button class="btn btn-primary" style="margin-top:auto">Start for free →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== ACCOUNT HISTORY =================== -->
+  <section class="block" id="history" data-screen-label="06 Account history" style="background:var(--paper-2); border-block:1px solid var(--line);">
+    <div class="container">
+      <div class="block-head">
+        <span class="kicker">Account</span>
+        <h2>Every conversion, ready to re-download for 90 days.</h2>
+        <p>Then it's gone — for real. No hidden archives, no admin panel override.</p>
+      </div>
+
+      <div class="history">
+        <div class="hist-head">
+          <div></div><div>File</div><div>Bank / format</div><div>Pages</div><div>Converted</div><div></div>
+        </div>
+        <!-- filled in JS -->
+        <div id="hist-rows"></div>
+      </div>
+      <div style="margin-top:14px; display:flex; justify-content:space-between; color:var(--ink-400); font-size:12.5px;">
+        <span>Showing 6 of 218 conversions this month</span>
+        <a href="#" style="color:var(--accent-600);">View all →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== CTA BAND =================== -->
+  <section class="block">
+    <div class="container">
+      <div class="cta-band">
+        <div>
+          <h3>Your first 5 pages are on us. No card needed.</h3>
+          <p>Most new accounts convert their first real statement in under 60 seconds. Bring a hard one — we like those.</p>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-lg" onclick="scrollToApp()">Convert a statement →</button>
+          <button class="btn btn-ghost btn-lg">Talk to sales</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container foot-inner">
+      <div class="hstack">
+        <span class="brand-mark" aria-hidden="true" style="width:18px; height:18px; border-radius:5px;"></span>
+        <span>LedgerLane, Inc.</span>
+        <span class="dim">·</span>
+        <span class="dim">Made for accountants who have better things to do.</span>
+      </div>
+      <div class="foot-links">
+        <a href="#">Security</a>
+        <a href="#">DPA</a>
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+        <a href="#">Status</a>
+        <a href="#">Changelog</a>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<!-- =================== TWEAKS =================== -->
+<aside class="tweaks" id="tweaks">
+  <h5>
+    Tweaks
+    <button class="tweaks-close" onclick="toggleTweaks(false)" aria-label="Close">×</button>
+  </h5>
+
+  <div class="grp">
+    <label>Variation</label>
+    <div class="seg" data-tweak="theme">
+      <button data-val="quiet">Quiet Ledger</button>
+      <button data-val="precision">Precision Blue</button>
+    </div>
+  </div>
+
+  <div class="grp">
+    <label>Mode</label>
+    <div class="seg" data-tweak="mode">
+      <button data-val="light">Light</button>
+      <button data-val="dark">Dark</button>
+    </div>
+  </div>
+
+  <div class="grp">
+    <label>Density</label>
+    <div class="seg" data-tweak="density">
+      <button data-val="compact">Compact</button>
+      <button data-val="cozy">Cozy</button>
+      <button data-val="airy">Airy</button>
+    </div>
+  </div>
+
+  <div class="grp">
+    <label>Hero layout</label>
+    <div class="seg" data-tweak="layout">
+      <button data-val="focused">Focused</button>
+      <button data-val="full">Full</button>
+    </div>
+  </div>
+
+  <div class="grp">
+    <label>Hero copy</label>
+    <div class="seg" data-tweak="copy">
+      <button data-val="converted">Converted</button>
+      <button data-val="liberated">Liberated</button>
+      <button data-val="pro">Pro</button>
+    </div>
+  </div>
+
+  <div class="grp">
+    <label>Accent</label>
+    <div class="swatches" data-tweak="accent">
+      <div class="sw" data-val="teal"    style="background:#0f6b7c"></div>
+      <div class="sw" data-val="blue"    style="background:#2563eb"></div>
+      <div class="sw" data-val="indigo"  style="background:#4338ca"></div>
+      <div class="sw" data-val="emerald" style="background:#047857"></div>
+      <div class="sw" data-val="plum"    style="background:#7b1e6a"></div>
+    </div>
+  </div>
+</aside>
+
+<script>
+/* ======================== API config ======================== */
+const API_BASE = 'http://localhost:8000';
+
+/* ======================== Tweak state ======================== */
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "theme": "quiet",
+  "mode": "light",
+  "density": "cozy",
+  "layout": "full",
+  "copy": "converted",
+  "accent": "teal"
+}/*EDITMODE-END*/;
+
+const COPY_VARIANTS = {
+  converted: {
+    eyebrow: "SOC 2 Type II · Files deleted in 24h",
+    h: "Bank statements, <em>converted</em>.",
+    s: "Drop a PDF. Get clean CSV, Excel, QBO or OFX back in under a minute."
+  },
+  liberated: {
+    eyebrow: "Trusted by 38,000 finance teams",
+    h: "The data is already in the PDF. <em>Let it out.</em>",
+    s: "Any statement — scanned, locked, or a decade old — into reconciled, exportable data."
+  },
+  pro: {
+    eyebrow: "For accountants, bookkeepers & firms",
+    h: "Statement to ledger in <em>60 seconds</em>.",
+    s: "99.4% accuracy across 1,204 banks. Batch, API and firm pricing included."
+  }
+};
+
+const ACCENTS = {
+  teal:    { '--accent-600': '#0f6b7c', '--accent-500': '#14869b', '--accent-200': '#a6dae2', '--accent-50': '#e6f3f6' },
+  blue:    { '--accent-600': '#1a56db', '--accent-500': '#2563eb', '--accent-200': '#c5d5f7', '--accent-50': '#eef3fd' },
+  indigo:  { '--accent-600': '#4338ca', '--accent-500': '#6366f1', '--accent-200': '#c7cbf5', '--accent-50': '#eef0ff' },
+  emerald: { '--accent-600': '#047857', '--accent-500': '#10a674', '--accent-200': '#b4e6d1', '--accent-50': '#e7f6ef' },
+  plum:    { '--accent-600': '#7b1e6a', '--accent-500': '#a12d8b', '--accent-200': '#e2b8da', '--accent-50': '#f6e9f4' }
+};
+
+function applyTweaks() {
+  const body = document.body;
+  body.classList.remove('theme-quiet', 'theme-precision');
+  body.classList.add('theme-' + TWEAKS.theme);
+
+  body.classList.remove('mode-light', 'mode-dark');
+  body.classList.add('mode-' + TWEAKS.mode);
+
+  body.classList.remove('density-compact', 'density-cozy', 'density-airy');
+  body.classList.add('density-' + TWEAKS.density);
+
+  // Accent override
+  const acc = ACCENTS[TWEAKS.accent] || ACCENTS.teal;
+  Object.entries(acc).forEach(([k, v]) => body.style.setProperty(k, v));
+
+  // Copy
+  const c = COPY_VARIANTS[TWEAKS.copy] || COPY_VARIANTS.converted;
+  document.getElementById('eyebrow-txt').textContent = c.eyebrow;
+  document.getElementById('hero-headline').innerHTML = c.h;
+  document.getElementById('hero-sub').textContent = c.s;
+
+  // Hero layout: "focused" = drop zone only, "full" = shows upload meta chips too
+  const meta = document.querySelector('.upload-meta');
+  if (meta) meta.style.display = TWEAKS.layout === 'focused' ? 'none' : '';
+
+  // Reflect in UI
+  document.querySelectorAll('.tweaks [data-tweak]').forEach(grp => {
+    const key = grp.dataset.tweak;
+    grp.querySelectorAll('[data-val]').forEach(btn => {
+      btn.classList.toggle('on', btn.dataset.val === TWEAKS[key]);
+    });
+  });
+}
+
+function setTweak(key, val) {
+  TWEAKS[key] = val;
+  applyTweaks();
+  try {
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*');
+  } catch (e) {}
+}
+
+document.querySelectorAll('.tweaks [data-tweak]').forEach(grp => {
+  const key = grp.dataset.tweak;
+  grp.querySelectorAll('[data-val]').forEach(btn => {
+    btn.addEventListener('click', () => setTweak(key, btn.dataset.val));
+  });
+});
+
+/* Edit-mode handshake — listener first, then announce */
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.type === '__activate_edit_mode')   document.getElementById('tweaks').classList.add('on');
+  if (d.type === '__deactivate_edit_mode') document.getElementById('tweaks').classList.remove('on');
+});
+try { window.parent.postMessage({ type: '__edit_mode_available' }, '*'); } catch (e) {}
+
+function toggleTweaks(on) {
+  document.getElementById('tweaks').classList.toggle('on', !!on);
+}
+
+/* ======================== Supported banks ======================== */
+const BANKS = [
+  { name: "Chase",             c: "#117ACA" },
+  { name: "Bank of America",   c: "#E11737" },
+  { name: "Wells Fargo",       c: "#B31B1B" },
+  { name: "Citi",              c: "#0B5CAB" },
+  { name: "Capital One",       c: "#D03F2F" },
+  { name: "American Express",  c: "#2E77BB" },
+  { name: "HSBC",              c: "#333333" },
+  { name: "Barclays",          c: "#00395D" },
+  { name: "Santander",         c: "#EC0000" },
+  { name: "Mercury",           c: "#0A0A0A" },
+  { name: "Brex",              c: "#F46A35" },
+  { name: "Ramp",              c: "#FDE64B" },
+  { name: "Revolut",           c: "#111111" },
+  { name: "Monzo",             c: "#EC5D64" },
+  { name: "Ally Bank",         c: "#671E75" },
+  { name: "Navy Federal",      c: "#00255E" },
+  { name: "PNC",               c: "#F68B1F" },
+  { name: "TD Bank",           c: "#2E8B2E" }
+];
+
+function initial(name) {
+  return name.split(' ').map(w => w[0]).slice(0,2).join('');
+}
+
+function renderBanks() {
+  const g = document.getElementById('banks-grid');
+  g.innerHTML = BANKS.slice(0, 12).map(b => `
+    <div class="bank">
+      <div class="bank-logo" style="background:${b.c}">${initial(b.name)}</div>
+      <span>${b.name}</span>
+    </div>
+  `).join('');
+}
+renderBanks();
+
+/* ======================== Sample transaction data ======================== */
+/* Realistic — dates sequential, running balance reconciles exactly */
+const OPENING_BALANCE = 12483.27;
+const RAW_TX = [
+  // date (Mar 2026), desc, subdesc, cat, amount (signed)
+  ["03/01","Opening Balance","Brought forward","—",            null],
+  ["03/01","Direct Deposit — Acme Corp Payroll","ACH CREDIT #8842","Income",               3241.50],
+  ["03/02","Whole Foods Market #10281","WHOLEFDS NYC","Groceries",                           -142.88],
+  ["03/02","Uber","UBER TRIP HYY73","Transport",                                              -18.40],
+  ["03/03","Con Edison","CONED WEB PMT","Utilities",                                         -186.22],
+  ["03/04","Blue Bottle Coffee","BLUEBOTTLE 19TH","Dining",                                    -7.50],
+  ["03/04","Zelle to Jordan Alvarez","ZELLE OUTGOING","Transfer",                            -400.00],
+  ["03/05","Apple Services","APPLE.COM/BILL","Software",                                      -19.99],
+  ["03/06","Venmo Cashout","VENMO CASHOUT","Transfer",                                        150.00],
+  ["03/07","Trader Joe's","TRADER JOE'S #542","Groceries",                                    -84.11],
+  ["03/08","Amazon.com","AMZN Mktp US*RT84M2","Shopping",                                    -216.47],
+  ["03/09","Rent — 412 Atlantic Ave","RENT BILLTRUST","Housing",                            -2450.00],
+  ["03/10","Stripe Payout — LedgerLane LLC","STRIPE TRANSFER","Income",                      1876.00],
+  ["03/11","CitiBike Annual","CITIBIKE MEMBER","Transport",                                   -220.00],
+  ["03/12","Equinox","EQUINOX MONTHLY","Fitness",                                             -265.00],
+  ["03/13","Refund — REI","REI REFUND #88122","Refund",                                        89.00],
+  ["03/14","Dinner — Llama Inn","TST* LLAMA INN BK","Dining",                                 -112.64],
+  ["03/15","Chase Card Payment","CHASE CARD ePay","Credit Card",                            -1200.00],
+  ["03/16","Airbnb · Kingston NY","AIRBNB HM48KJD","Travel",                                 -342.19],
+  ["03/17","ATM Withdrawal — 5th Ave","ATM CASH WD","Cash",                                  -200.00],
+  ["03/18","Spotify Family","SPOTIFY.COM","Software",                                         -16.99],
+  ["03/19","Duane Reade","DUANE READE 2104","Pharmacy",                                       -34.22],
+  ["03/20","Direct Deposit — Acme Corp Payroll","ACH CREDIT #8849","Income",                 3241.50],
+  ["03/21","Interest Earned","CREDIT INTEREST","Interest",                                      12.16],
+  ["03/22","MTA — Metrocard Reload","NYCT PAYGO","Transport",                                 -33.00],
+  ["03/23","Etsy — J.Hinojosa Ceramics","ETSY PURCHASE","Shopping",                           -64.00],
+  ["03/24","Sweetgreen","SWEETGREEN #NYCM","Dining",                                          -18.30]
+];
+
+function fmt(n) {
+  if (n === null) return "—";
+  const s = Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
+  return (n >= 0 ? "+$" : "−$") + s;
+}
+
+function renderResults(data) {
+  // Update preview header
+  const pillEl = document.querySelector('.preview-head .hstack .pill');
+  if (pillEl) pillEl.innerHTML = `<span class="dot" style="color:var(--accent-600)"></span> ${data.bank_name}`;
+  const monoEl = document.querySelector('.preview-head .hstack .mono.dim');
+  if (monoEl) monoEl.textContent = data.date_range;
+
+  // Update stats
+  document.getElementById('tx-count').textContent = data.transactions.length;
+  document.getElementById('tx-flagged').textContent = data.stats.flagged;
+
+  const fmtMoney = (n) => {
+    const abs = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (n >= 0 ? '+$' : '−$') + abs;
+  };
+
+  const statsEl = document.querySelector('.preview-stats');
+  if (statsEl) {
+    const statDivs = statsEl.querySelectorAll('div');
+    if (statDivs[1]) statDivs[1].innerHTML = `<b class="credit">${fmtMoney(data.stats.total_in)}</b> in`;
+    if (statDivs[2]) statDivs[2].innerHTML = `<b style="color:var(--bad-500)">${fmtMoney(data.stats.total_out)}</b> out`;
+  }
+
+  const tbody = document.getElementById('tbody');
+  const rows = data.transactions.map((t) => {
+    const amount = t.amount;
+    const amountCell = amount === null
+      ? `<td class="num dim">—</td>`
+      : `<td class="num ${amount > 0 ? 'credit' : ''}">${fmtMoney(amount)}</td>`;
+    const balance = t.balance !== null && t.balance !== undefined
+      ? `$${Math.abs(t.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : '—';
+    return `<tr>
+      <td class="date">${t.date || ''}</td>
+      <td>
+        <div><span class="cell-edit desc" contenteditable="true" spellcheck="false">${t.description || ''}</span></div>
+        <div class="sub mono">${t.raw_description || ''}</div>
+      </td>
+      <td><span class="cell-edit" contenteditable="true" spellcheck="false">${t.category || ''}</span></td>
+      ${amountCell}
+      <td class="num dim">${balance}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows.join('');
+
+  showStage('preview');
+}
+
+/* ======================== Stage transitions ======================== */
+const stages = {
+  upload:  document.getElementById('stage-upload'),
+  detect:  document.getElementById('stage-detect'),
+  preview: document.getElementById('stage-preview')
+};
+function showStage(name) {
+  Object.entries(stages).forEach(([k, el]) => {
+    el.classList.toggle('hide', k !== name);
+    if (k === name) { el.classList.remove('fade-in'); void el.offsetWidth; el.classList.add('fade-in'); }
+  });
+}
+
+function runBar(id, duration, onDone) {
+  const el = document.getElementById(id);
+  el.style.width = '0%';
+  requestAnimationFrame(() => {
+    el.style.transition = `width ${duration}ms ease`;
+    el.style.width = '100%';
+  });
+  setTimeout(onDone, duration);
+}
+
+/* ======================== Upload state ======================== */
+let currentToken = null;
+
+function startUpload(file) {
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+    showUploadError('Please upload a PDF file.');
+    return;
+  }
+  _runUpload(file);
+}
+
+async function _runUpload(file) {
+  showStage('detect');
+  const barTimings = [
+    { id: 'bar-1', delay: 0,    label: 'detect-s1', text: 'Reading pages…' },
+    { id: 'bar-2', delay: 2500, label: 'detect-s2', text: 'Matching bank format…' },
+    { id: 'bar-3', delay: 5500, label: 'detect-s3', text: 'Extracting transactions…' },
+  ];
+  barTimings.forEach(({ id, delay, label, text }) => {
+    setTimeout(() => {
+      document.getElementById(label).textContent = text;
+      runBar(id, 3000, () => {});
+    }, delay);
+  });
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  let data;
+  try {
+    const res = await fetch(`${API_BASE}/convert`, { method: 'POST', body: formData });
+    if (!res.ok) {
+      const err = await res.json();
+      handleConvertError(err.detail || err);
+      return;
+    }
+    data = await res.json();
+  } catch (e) {
+    showUploadError('Network error — please check your connection and try again.');
+    showStage('upload');
+    return;
+  }
+
+  currentToken = data.token;
+
+  document.getElementById('detect-s1').textContent = `${data.page_count} page${data.page_count !== 1 ? 's' : ''} read.`;
+  document.getElementById('detect-s2').textContent = `Matched: ${data.bank_name}.`;
+  document.getElementById('detect-s3').textContent = `${data.transactions.length} transactions extracted.`;
+
+  setTimeout(() => renderResults(data), 400);
+}
+
+function handleConvertError(detail) {
+  showStage('upload');
+  if (detail && detail.error === 'too_many_pages') {
+    showUploadError(
+      `This statement is ${detail.pages} pages. Free conversions are limited to ${detail.limit} pages. ` +
+      `<a href="#" style="color:var(--accent-600);font-weight:500;">Create a free account →</a> to convert longer statements.`
+    );
+  } else if (detail && detail.error === 'not_a_bank_statement') {
+    showUploadError('This doesn\'t look like a bank statement. Please upload a PDF bank statement.');
+  } else if (detail && detail.error === 'encrypted_pdf') {
+    showUploadError(
+      'This PDF is password-protected. Remove the password and try again. ' +
+      'Most banking apps let you download an unprotected version.'
+    );
+  } else if (detail && detail.error === 'invalid_pdf') {
+    showUploadError('This file doesn\'t appear to be a valid PDF. Please try a different file.');
+  } else {
+    showUploadError('Something went wrong — please try again.');
+  }
+}
+
+function showUploadError(msg) {
+  let banner = document.getElementById('upload-error');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'upload-error';
+    banner.style.cssText = 'margin-top:12px;padding:12px 14px;background:color-mix(in oklab,var(--bad-500) 10%,var(--card));border:1px solid color-mix(in oklab,var(--bad-500) 30%,var(--line));border-radius:var(--radius-md);color:var(--bad-500);font-size:13.5px;line-height:1.5;';
+    document.getElementById('stage-upload').appendChild(banner);
+  }
+  banner.innerHTML = msg;
+  banner.style.display = 'block';
+}
+
+function clearUploadError() {
+  const banner = document.getElementById('upload-error');
+  if (banner) banner.style.display = 'none';
+}
+
+function resetDemo() {
+  currentToken = null;
+  clearUploadError();
+  showStage('upload');
+}
+
+function scrollToApp() {
+  document.getElementById('app').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* Drop zone interaction */
+const drop = document.getElementById('drop');
+const fileInput = document.getElementById('file-input');
+
+drop.addEventListener('click', () => { clearUploadError(); fileInput.click(); });
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) startUpload(fileInput.files[0]);
+  fileInput.value = '';
+});
+
+['dragenter', 'dragover'].forEach(e =>
+  drop.addEventListener(e, (ev) => { ev.preventDefault(); drop.classList.add('over'); })
+);
+['dragleave', 'drop'].forEach(e =>
+  drop.addEventListener(e, (ev) => {
+    ev.preventDefault();
+    drop.classList.remove('over');
+    if (e === 'drop') {
+      clearUploadError();
+      startUpload(ev.dataTransfer.files[0]);
+    }
+  })
+);
+
+/* Export chip selection + download */
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+    chip.classList.add('on');
+    const fmt = chip.dataset.fmt;
+    document.getElementById('export-ext').textContent = {
+      csv: 'CSV', xlsx: 'Excel', qbo: 'QuickBooks', ofx: 'OFX', json: 'JSON'
+    }[fmt] || fmt.toUpperCase();
+  });
+});
+
+document.getElementById('export-btn').addEventListener('click', () => {
+  if (!currentToken) return;
+  const activeFmt = document.querySelector('.chip.on')?.dataset.fmt || 'csv';
+  window.location.href = `${API_BASE}/download/${currentToken}/${activeFmt}`;
+});
+
+/* ======================== Auto-delete timer ======================== */
+(function tick() {
+  const el = document.getElementById('timer');
+  if (!el) return;
+  let t = 23 * 3600 + 59 * 60 + 47;
+  setInterval(() => {
+    t = t <= 0 ? 24*3600 - 1 : t - 1;
+    const h = String(Math.floor(t/3600)).padStart(2,'0');
+    const m = String(Math.floor((t%3600)/60)).padStart(2,'0');
+    const s = String(t%60).padStart(2,'0');
+    el.textContent = `${h}:${m}:${s}`;
+  }, 1000);
+})();
+
+/* ======================== History table ======================== */
+const HIST = [
+  ["march_2026_chase.pdf",   "Chase · Total Checking",      "4 pages", "2 days ago",    "ok"],
+  ["amex_plat_feb26.pdf",    "American Express · Platinum", "6 pages", "5 days ago",    "ok"],
+  ["mercury_q1.pdf",         "Mercury · Business",          "11 pages","6 days ago",    "ok"],
+  ["boa_jan26_scan.jpg",     "Bank of America · Checking",  "3 pages", "12 days ago",   "flag"],
+  ["brex_2026_01.pdf",       "Brex · Cash",                 "8 pages", "18 days ago",   "ok"],
+  ["payroll_feb_export.csv", "Manual upload",               "—",       "22 days ago",   "ok"]
+];
+function renderHist() {
+  const el = document.getElementById('hist-rows');
+  el.innerHTML = HIST.map(h => `
+    <div class="hist-row">
+      <div class="ic">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div>
+        <div class="fname">${h[0]}</div>
+        <div class="meta">${h[4] === 'flag' ? '<span class="pill warn"><span class="dot"></span>1 row flagged</span>' : '<span class="pill good"><span class="dot"></span>exported</span>'}</div>
+      </div>
+      <div class="meta">${h[1]}</div>
+      <div class="stat">${h[2]}</div>
+      <div class="stat">${h[3]}</div>
+      <div style="text-align:right;">
+        <button class="btn btn-ghost btn-sm">Download</button>
+      </div>
+    </div>
+  `).join('');
+}
+renderHist();
+
+/* ======================== Init ======================== */
+applyTweaks();
+</script>
+</body>
+</html>
