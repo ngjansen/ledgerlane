@@ -1,6 +1,7 @@
 node_modules/
 temporary screenshots/
-backend/__pycache__/
-backend/*.pyc
+**/__pycache__/
+**/*.pyc
 .env
 *.env
+.vercel
